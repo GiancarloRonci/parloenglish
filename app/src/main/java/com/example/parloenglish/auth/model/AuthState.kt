@@ -1,6 +1,6 @@
 package com.example.parloenglish.auth.model
 
-sealed class AuthState {
+sealed class AuthState  {
 
     object Loading : AuthState()
 
