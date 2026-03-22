@@ -1,5 +1,6 @@
 package com.example.parloenglish.auth.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,183 +55,213 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch
     }
 
-    Column(
-        modifier = modifier
+    // Gradient background to enhance visual style
+    val backgroundBrush = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+            MaterialTheme.colorScheme.surface
+        )
+    )
+
+    Box(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(backgroundBrush)
     ) {
-        // App Logo and Title
-        Icon(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "App Logo",
-            modifier = Modifier.size(100.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        
-        Text(
-            text = "ParloEnglish",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // App Logo and Title
+            Icon(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(100.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            
+            Text(
+                text = "ParloEnglish",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = if (isLoginMode) "Accedi" else "Registrati",
-            style = MaterialTheme.typography.headlineMedium
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = if (isLoginMode) "Accedi" else "Registrati",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (!isLoginMode) {
+            if (!isLoginMode) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nome") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = textFieldShape,
+                    enabled = !isLoading,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nome") },
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = textFieldShape,
                 enabled = !isLoading,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                ),
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
+                    keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 )
             )
+
             Spacer(modifier = Modifier.height(8.dp))
-        }
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = textFieldShape,
-            enabled = !isLoading,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) }
-            )
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            isError = showError,
-            shape = textFieldShape,
-            enabled = !isLoading,
-            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val icon = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                val description = if (isPasswordVisible) "Hide password" else "Show password"
-
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }, enabled = !isLoading) {
-                    Icon(imageVector = icon, contentDescription = description)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = if (isLoginMode) ImeAction.Done else ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                onDone = { focusManager.clearFocus() }
-            )
-        )
-
-        if (!isLoginMode) {
-            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Conferma Password") },
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
                 isError = showError,
                 shape = textFieldShape,
                 enabled = !isLoading,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                ),
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                supportingText = {
-                    if (showError) {
-                        Text(
-                            text = "Le password non coincidono",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                trailingIcon = {
+                    val icon = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (isPasswordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = { isPasswordVisible = !isPasswordVisible }, enabled = !isLoading) {
+                        Icon(imageVector = icon, contentDescription = description)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
+                    imeAction = if (isLoginMode) ImeAction.Done else ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
                     onDone = { focusManager.clearFocus() }
                 )
             )
-        }
 
-        if (isLoginMode) {
+            if (!isLoginMode) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Conferma Password") },
+                    isError = showError,
+                    shape = textFieldShape,
+                    enabled = !isLoading,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                    ),
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    supportingText = {
+                        if (showError) {
+                            Text(
+                                text = "Le password non coincidono",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
+                    )
+                )
+            }
+
+            if (isLoginMode) {
+                TextButton(
+                    onClick = { /* Password Recovery Action */ },
+                    modifier = Modifier.align(Alignment.End),
+                    enabled = !isLoading
+                ) {
+                    Text("Password dimenticata?")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { 
+                    coroutineScope.launch {
+                        isLoading = true
+                        delay(2000) // Simulate network request
+                        isLoading = false
+                    }
+                },
+                enabled = isFormValid && !isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                shape = buttonShape
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(if (isLoginMode) "Login" else "Registrati")
+                }
+            }
+
             TextButton(
-                onClick = { /* Password Recovery Action */ },
-                modifier = Modifier.align(Alignment.End),
+                onClick = { 
+                    isLoginMode = !isLoginMode 
+                    if (isLoginMode) {
+                        confirmPassword = ""
+                        name = ""
+                    }
+                },
                 enabled = !isLoading
             ) {
-                Text("Password dimenticata?")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = { 
-                coroutineScope.launch {
-                    isLoading = true
-                    delay(2000) // Simulate network request
-                    isLoading = false
-                }
-            },
-            enabled = isFormValid && !isLoading,
-            modifier = Modifier.fillMaxWidth(),
-            shape = buttonShape
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp
+                Text(
+                    if (isLoginMode) "Non hai un account? Registrati" 
+                    else "Hai già un account? Accedi"
                 )
-            } else {
-                Text(if (isLoginMode) "Login" else "Registrati")
             }
-        }
-
-        TextButton(
-            onClick = { 
-                isLoginMode = !isLoginMode 
-                if (isLoginMode) {
-                    confirmPassword = ""
-                    name = ""
-                }
-            },
-            enabled = !isLoading
-        ) {
-            Text(
-                if (isLoginMode) "Non hai un account? Registrati" 
-                else "Hai già un account? Accedi"
-            )
         }
     }
 }
