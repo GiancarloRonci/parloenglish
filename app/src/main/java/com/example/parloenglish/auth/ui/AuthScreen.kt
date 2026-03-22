@@ -24,38 +24,47 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.parloenglish.R
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.parloenglish.auth.model.AuthState
 
 @Composable
-fun AuthScreen(modifier: Modifier = Modifier) {
+fun AuthScreen(
+    viewModel: AuthViewModel,
+    onLoginSuccess: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     var isLoginMode by remember { mutableStateOf(true) }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+
+    // Observe the state from the ViewModel
+    val authState by viewModel.authState.collectAsState()
+    val isLoading = authState is AuthState.Loading
+    val errorMessage = (authState as? AuthState.Error)?.message
 
     val focusManager = LocalFocusManager.current
-    val coroutineScope = rememberCoroutineScope()
     
-    // Define a common rounded shape for inputs and buttons
     val textFieldShape = RoundedCornerShape(16.dp)
     val buttonShape = RoundedCornerShape(16.dp)
 
-    // Logic for password matching error
     val passwordsMatch = password == confirmPassword
-    val showError = !isLoginMode && confirmPassword.isNotEmpty() && !passwordsMatch
+    val showPasswordError = !isLoginMode && confirmPassword.isNotEmpty() && !passwordsMatch
     
-    // Logic for button enabled state
     val isFormValid = if (isLoginMode) {
         email.isNotEmpty() && password.isNotEmpty()
     } else {
         name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch
     }
 
-    // Gradient background to enhance visual style
+    // React to authentication success
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
+            onLoginSuccess()
+        }
+    }
+
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
@@ -75,7 +84,6 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // App Logo and Title
             Icon(
                 painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = "App Logo",
@@ -98,6 +106,16 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             )
             
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Global error message
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
             if (!isLoginMode) {
                 OutlinedTextField(
@@ -150,7 +168,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                isError = showError,
+                isError = showPasswordError,
                 shape = textFieldShape,
                 enabled = !isLoading,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -160,10 +178,8 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val icon = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    val description = if (isPasswordVisible) "Hide password" else "Show password"
-
                     IconButton(onClick = { isPasswordVisible = !isPasswordVisible }, enabled = !isLoading) {
-                        Icon(imageVector = icon, contentDescription = description)
+                        Icon(imageVector = icon, contentDescription = null)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -184,7 +200,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     label = { Text("Conferma Password") },
-                    isError = showError,
+                    isError = showPasswordError,
                     shape = textFieldShape,
                     enabled = !isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -193,11 +209,8 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                     ),
                     visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     supportingText = {
-                        if (showError) {
-                            Text(
-                                text = "Le password non coincidono",
-                                color = MaterialTheme.colorScheme.error
-                            )
+                        if (showPasswordError) {
+                            Text(text = "Le password non coincidono", color = MaterialTheme.colorScheme.error)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -214,7 +227,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
 
             if (isLoginMode) {
                 TextButton(
-                    onClick = { /* Password Recovery Action */ },
+                    onClick = { /* TODO */ },
                     modifier = Modifier.align(Alignment.End),
                     enabled = !isLoading
                 ) {
@@ -226,10 +239,10 @@ fun AuthScreen(modifier: Modifier = Modifier) {
 
             Button(
                 onClick = { 
-                    coroutineScope.launch {
-                        isLoading = true
-                        delay(2000) // Simulate network request
-                        isLoading = false
+                    if (isLoginMode) {
+                        viewModel.login(email, password)
+                    } else {
+                        viewModel.register(email, password, name)
                     }
                 },
                 enabled = isFormValid && !isLoading,
@@ -250,10 +263,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             TextButton(
                 onClick = { 
                     isLoginMode = !isLoginMode 
-                    if (isLoginMode) {
-                        confirmPassword = ""
-                        name = ""
-                    }
+                    viewModel.clearError()
                 },
                 enabled = !isLoading
             ) {
