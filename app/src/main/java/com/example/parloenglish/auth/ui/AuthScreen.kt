@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.parloenglish.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AuthScreen(modifier: Modifier = Modifier) {
@@ -31,8 +33,11 @@ fun AuthScreen(modifier: Modifier = Modifier) {
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    val coroutineScope = rememberCoroutineScope()
+    
     // Define a common rounded shape for inputs and buttons
     val textFieldShape = RoundedCornerShape(16.dp)
     val buttonShape = RoundedCornerShape(16.dp)
@@ -40,6 +45,13 @@ fun AuthScreen(modifier: Modifier = Modifier) {
     // Logic for password matching error
     val passwordsMatch = password == confirmPassword
     val showError = !isLoginMode && confirmPassword.isNotEmpty() && !passwordsMatch
+    
+    // Logic for button enabled state
+    val isFormValid = if (isLoginMode) {
+        email.isNotEmpty() && password.isNotEmpty()
+    } else {
+        name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch
+    }
 
     Column(
         modifier = modifier
@@ -80,6 +92,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = textFieldShape,
+                enabled = !isLoading,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
@@ -98,6 +111,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             shape = textFieldShape,
+            enabled = !isLoading,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -115,12 +129,13 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             label = { Text("Password") },
             isError = showError,
             shape = textFieldShape,
+            enabled = !isLoading,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icon = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                 val description = if (isPasswordVisible) "Hide password" else "Show password"
 
-                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                IconButton(onClick = { isPasswordVisible = !isPasswordVisible }, enabled = !isLoading) {
                     Icon(imageVector = icon, contentDescription = description)
                 }
             },
@@ -144,6 +159,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 label = { Text("Conferma Password") },
                 isError = showError,
                 shape = textFieldShape,
+                enabled = !isLoading,
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 supportingText = {
                     if (showError) {
@@ -168,7 +184,8 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         if (isLoginMode) {
             TextButton(
                 onClick = { /* Password Recovery Action */ },
-                modifier = Modifier.align(Alignment.End)
+                modifier = Modifier.align(Alignment.End),
+                enabled = !isLoading
             ) {
                 Text("Password dimenticata?")
             }
@@ -177,22 +194,38 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /* Login/Register Action */ },
-            enabled = if (isLoginMode) email.isNotEmpty() && password.isNotEmpty() 
-                      else name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch,
+            onClick = { 
+                coroutineScope.launch {
+                    isLoading = true
+                    delay(2000) // Simulate network request
+                    isLoading = false
+                }
+            },
+            enabled = isFormValid && !isLoading,
             modifier = Modifier.fillMaxWidth(),
             shape = buttonShape
         ) {
-            Text(if (isLoginMode) "Login" else "Registrati")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(if (isLoginMode) "Login" else "Registrati")
+            }
         }
 
-        TextButton(onClick = { 
-            isLoginMode = !isLoginMode 
-            if (isLoginMode) {
-                confirmPassword = ""
-                name = ""
-            }
-        }) {
+        TextButton(
+            onClick = { 
+                isLoginMode = !isLoginMode 
+                if (isLoginMode) {
+                    confirmPassword = ""
+                    name = ""
+                }
+            },
+            enabled = !isLoading
+        ) {
             Text(
                 if (isLoginMode) "Non hai un account? Registrati" 
                 else "Hai già un account? Accedi"
