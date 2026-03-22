@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AuthScreen(modifier: Modifier = Modifier) {
     var isLoginMode by remember { mutableStateOf(true) }
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -37,6 +38,17 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         )
         
         Spacer(modifier = Modifier.height(32.dp))
+
+        if (!isLoginMode) {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nome") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         OutlinedTextField(
             value = email,
@@ -92,7 +104,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         Button(
             onClick = { /* Azione Login/Register */ },
             enabled = if (isLoginMode) email.isNotEmpty() && password.isNotEmpty() 
-                      else email.isNotEmpty() && password.isNotEmpty() && passwordsMatch,
+                      else name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(if (isLoginMode) "Login" else "Registrati")
@@ -100,7 +112,10 @@ fun AuthScreen(modifier: Modifier = Modifier) {
 
         TextButton(onClick = { 
             isLoginMode = !isLoginMode 
-            if (isLoginMode) confirmPassword = ""
+            if (isLoginMode) {
+                confirmPassword = ""
+                name = ""
+            }
         }) {
             Text(
                 if (isLoginMode) "Non hai un account? Registrati" 
