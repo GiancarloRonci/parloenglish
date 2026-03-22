@@ -136,6 +136,15 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             )
         }
 
+        if (isLoginMode) {
+            TextButton(
+                onClick = { /* Azione Recupero Password */ },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Password dimenticata?")
+            }
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
