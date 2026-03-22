@@ -11,7 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.example.parloenglish.auth.MockAuthRepository
+import com.example.parloenglish.auth.FirebaseAuthRepository
 import com.example.parloenglish.auth.ui.AuthScreen
 import com.example.parloenglish.auth.ui.AuthViewModel
 import com.example.parloenglish.ui.WelcomeScreen
@@ -21,9 +21,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Inizializziamo il Repository e il ViewModel
+        // Inizializziamo il Repository reale e il ViewModel
         // Nota: In un'app reale useremmo la Dependency Injection (es. Hilt)
-        val authRepository = MockAuthRepository()
+        val authRepository = FirebaseAuthRepository()
         val authViewModel = AuthViewModel(authRepository)
 
         enableEdgeToEdge()
