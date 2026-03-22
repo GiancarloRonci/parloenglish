@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "508560648798",
+    "project_id": "parlaenglish-app",
+    "storage_bucket": "parlaenglish-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508560648798:android:ce8fda0af1d0324ba1a2cf",
+        "android_client_info": {
+          "package_name": "com.example.parloenglish"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "508560648798-2relefbhrma0f75haq4rnbcjofna3ncs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMjtCrgsX0lKQxS--_IEGrNhAn6AVZ08s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "508560648798-2relefbhrma0f75haq4rnbcjofna3ncs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
