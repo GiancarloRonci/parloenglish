@@ -1,5 +1,6 @@
 package com.example.parloenglish.auth.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,8 +41,12 @@ fun AuthScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    
     // Observe the state from the ViewModel
     val authState by viewModel.authState.collectAsState()
+    val resetSent by viewModel.resetPasswordSent.collectAsState()
+    
     val isLoading = authState is AuthState.Loading
     val errorMessage = (authState as? AuthState.Error)?.message
 
@@ -62,6 +68,14 @@ fun AuthScreen(
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
             onLoginSuccess()
+        }
+    }
+
+    // React to password reset email sent
+    LaunchedEffect(resetSent) {
+        if (resetSent) {
+            Toast.makeText(context, "Email di reset inviata a $email", Toast.LENGTH_LONG).show()
+            viewModel.resetPasswordSentAck()
         }
     }
 
@@ -227,7 +241,13 @@ fun AuthScreen(
 
             if (isLoginMode) {
                 TextButton(
-                    onClick = { /* TODO */ },
+                    onClick = { 
+                        if (email.isNotEmpty()) {
+                            viewModel.sendPasswordReset(email)
+                        } else {
+                            Toast.makeText(context, "Inserisci prima la tua email", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     modifier = Modifier.align(Alignment.End),
                     enabled = !isLoading
                 ) {

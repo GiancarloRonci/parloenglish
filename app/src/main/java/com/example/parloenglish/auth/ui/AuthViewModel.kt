@@ -14,6 +14,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
+    private val _resetPasswordSent = MutableStateFlow(false)
+    val resetPasswordSent: StateFlow<Boolean> = _resetPasswordSent.asStateFlow()
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
@@ -38,7 +41,24 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    fun sendPasswordReset(email: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            val result = repository.sendPasswordReset(email)
+            result.onSuccess {
+                _resetPasswordSent.value = true
+                _authState.value = AuthState.Unauthenticated
+            }.onFailure { exception ->
+                _authState.value = AuthState.Error(exception.message ?: "Errore durante l'invio della mail di reset")
+            }
+        }
+    }
+
     fun clearError() {
         _authState.value = AuthState.Unauthenticated
+    }
+
+    fun resetPasswordSentAck() {
+        _resetPasswordSent.value = false
     }
 }
