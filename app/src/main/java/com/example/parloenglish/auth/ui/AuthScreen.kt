@@ -1,6 +1,7 @@
 package com.example.parloenglish.auth.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -12,11 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.parloenglish.R
 
 @Composable
 fun AuthScreen(modifier: Modifier = Modifier) {
@@ -28,6 +33,9 @@ fun AuthScreen(modifier: Modifier = Modifier) {
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
+    // Define a common rounded shape for inputs and buttons
+    val textFieldShape = RoundedCornerShape(16.dp)
+    val buttonShape = RoundedCornerShape(16.dp)
 
     // Logic for password matching error
     val passwordsMatch = password == confirmPassword
@@ -40,12 +48,29 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // App Logo and Title
+        Icon(
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(100.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        
+        Text(
+            text = "ParloEnglish",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = if (isLoginMode) "Accedi" else "Registrati",
             style = MaterialTheme.typography.headlineMedium
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (!isLoginMode) {
             OutlinedTextField(
@@ -54,6 +79,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 label = { Text("Nome") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                shape = textFieldShape,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
@@ -71,6 +97,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            shape = textFieldShape,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
@@ -87,10 +114,11 @@ fun AuthScreen(modifier: Modifier = Modifier) {
             onValueChange = { password = it },
             label = { Text("Password") },
             isError = showError,
+            shape = textFieldShape,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val icon = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                val description = if (isPasswordVisible) "Nascondi password" else "Mostra password"
+                val description = if (isPasswordVisible) "Hide password" else "Show password"
 
                 IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                     Icon(imageVector = icon, contentDescription = description)
@@ -115,6 +143,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
                 onValueChange = { confirmPassword = it },
                 label = { Text("Conferma Password") },
                 isError = showError,
+                shape = textFieldShape,
                 visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 supportingText = {
                     if (showError) {
@@ -138,7 +167,7 @@ fun AuthScreen(modifier: Modifier = Modifier) {
 
         if (isLoginMode) {
             TextButton(
-                onClick = { /* Azione Recupero Password */ },
+                onClick = { /* Password Recovery Action */ },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text("Password dimenticata?")
@@ -148,10 +177,11 @@ fun AuthScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /* Azione Login/Register */ },
+            onClick = { /* Login/Register Action */ },
             enabled = if (isLoginMode) email.isNotEmpty() && password.isNotEmpty() 
                       else name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty() && passwordsMatch,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = buttonShape
         ) {
             Text(if (isLoginMode) "Login" else "Registrati")
         }
