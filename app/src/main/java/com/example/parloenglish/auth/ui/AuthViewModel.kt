@@ -54,6 +54,13 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         }
     }
 
+    fun logout() {
+        viewModelScope.launch {
+            repository.logout()
+            _authState.value = AuthState.Unauthenticated
+        }
+    }
+
     fun clearError() {
         _authState.value = AuthState.Unauthenticated
     }
