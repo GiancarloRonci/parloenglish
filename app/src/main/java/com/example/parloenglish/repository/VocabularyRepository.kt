@@ -16,6 +16,19 @@ class VocabularyRepository(
     private val vocabularyCollection = firestore.collection("vocabulary")
     private val progressCollection = firestore.collection("user_progress")
 
+    private val initialItems = listOf(
+        VocabularyItem(italian = "Ciao", english = "Hello", level = "A1"),
+        VocabularyItem(italian = "Grazie", english = "Thank you", level = "A1"),
+        VocabularyItem(italian = "Per favore", english = "Please", level = "A1"),
+        VocabularyItem(italian = "Sì", english = "Yes", level = "A1"),
+        VocabularyItem(italian = "No", english = "No", level = "A1"),
+        VocabularyItem(italian = "Mi chiamo...", english = "My name is...", level = "A1"),
+        VocabularyItem(italian = "Come stai?", english = "How are you?", level = "A1"),
+        VocabularyItem(italian = "Piacere di conoscerti", english = "Nice to meet you", level = "A1"),
+        VocabularyItem(italian = "Scusa", english = "Excuse me", level = "A1"),
+        VocabularyItem(italian = "Arrivederci", english = "Goodbye", level = "A1")
+    )
+
     suspend fun getVocabularyByLevel(level: String): Result<List<VocabularyItem>> {
         return try {
             val snapshot = vocabularyCollection
@@ -28,24 +41,52 @@ class VocabularyRepository(
             }
             Result.success(items)
         } catch (e: Exception) {
+            Log.e(TAG, "Error getVocabularyByLevel: ${e.message}")
             Result.failure(e)
         }
     }
 
-    suspend fun getDueCards(userId: String, level: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
+    suspend fun getAllVocabularyWithProgress(userId: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
         return try {
-            Log.d(TAG, "Recupero carte per utente: $userId, livello: $level")
-            
-            val allVocab = getVocabularyByLevel(level).getOrThrow()
-            Log.d(TAG, "Parole totali trovate per il livello $level: ${allVocab.size}")
+            val allVocab = vocabularyCollection.get().await().documents.mapNotNull { doc ->
+                doc.toObject(VocabularyItem::class.java)?.copy(id = doc.id)
+            }
             
             val progressSnapshot = progressCollection
                 .whereEqualTo("userId", userId)
                 .get()
                 .await()
             
-            Log.d(TAG, "Documenti di progresso trovati: ${progressSnapshot.size()}")
+            val userProgressMap = progressSnapshot.documents.associate { doc ->
+                val progress = doc.toObject(UserProgress::class.java)!!.copy(id = doc.id)
+                progress.vocabularyId to progress
+            }
 
+            val result = allVocab.map { item ->
+                item to userProgressMap[item.id]
+            }
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getDueCards(userId: String, level: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
+        return try {
+            Log.d(TAG, "Fetching cards for user: $userId, level: $level")
+            
+            val allVocab = getVocabularyByLevel(level).getOrThrow()
+            
+            if (allVocab.size < initialItems.size) {
+                seedInitialData()
+                return getDueCards(userId, level)
+            }
+
+            val progressSnapshot = progressCollection
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+            
             val userProgressMap = progressSnapshot.documents.associate { doc ->
                 val progress = doc.toObject(UserProgress::class.java)!!.copy(id = doc.id)
                 progress.vocabularyId to progress
@@ -62,10 +103,10 @@ class VocabularyRepository(
                 }
             }
             
-            Log.d(TAG, "Carte da studiare dopo il filtro: ${dueCards.size}")
+            Log.d(TAG, "Due cards after filter: ${dueCards.size}")
             Result.success(dueCards)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore in getDueCards: ${e.message}", e)
+            Log.e(TAG, "Error in getDueCards: ${e.message}")
             Result.failure(e)
         }
     }
@@ -114,39 +155,45 @@ class VocabularyRepository(
             for (doc in snapshot.documents) {
                 doc.reference.delete().await()
             }
-            Log.d(TAG, "Progressi resettati per l'utente $userId")
+            Log.d(TAG, "Progress reset successfully for $userId")
+            seedInitialData()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun seedInitialData() {
-        val initialItems = listOf(
-            VocabularyItem(italian = "Ciao (incontro)", english = "Hello", level = "A1"),
-            VocabularyItem(italian = "Grazie", english = "Thank you", level = "A1"),
-            VocabularyItem(italian = "Per favore", english = "Please", level = "A1"),
-            VocabularyItem(italian = "Sì", english = "Yes", level = "A1"),
-            VocabularyItem(italian = "No", english = "No", level = "A1"),
-            VocabularyItem(italian = "Mi chiamo...", english = "My name is...", level = "A1"),
-            VocabularyItem(italian = "Come stai?", english = "How are you?", level = "A1"),
-            VocabularyItem(italian = "Piacere di conoscerti", english = "Nice to meet you", level = "A1"),
-            VocabularyItem(italian = "Scusa / Scusi", english = "Excuse me", level = "A1"),
-            VocabularyItem(italian = "Arrivederci", english = "Goodbye", level = "A1")
-        )
+    suspend fun resetSingleCardProgress(progressId: String): Result<Unit> {
+        return try {
+            Log.d(TAG, "Attempting to delete progress document ID: $progressId")
+            if (progressId.isEmpty()) {
+                Log.e(TAG, "Error: progressId is empty")
+                return Result.failure(Exception("ID progresso vuoto"))
+            }
+            
+            progressCollection.document(progressId).delete().await()
+            Log.d(TAG, "Deletion successful for ID: $progressId")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting single card progress: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
 
+    suspend fun seedInitialData() {
         try {
-            val existing = vocabularyCollection.whereEqualTo("level", "A1").limit(1).get().await()
-            if (existing.isEmpty) {
-                Log.d(TAG, "Inizializzazione dati A1...")
-                for (item in initialItems) {
+            val snapshot = vocabularyCollection.get().await()
+            val existingItalians = snapshot.documents.mapNotNull { it.getString("italian") }.toSet()
+
+            for (item in initialItems) {
+                if (!existingItalians.contains(item.italian)) {
+                    Log.d(TAG, "Adding missing word: ${item.italian}")
                     vocabularyCollection.add(item).await()
                 }
-            } else {
-                Log.d(TAG, "Dati A1 già presenti.")
             }
+            Log.d(TAG, "Database seed check completed.")
         } catch (e: Exception) {
-            Log.e(TAG, "Errore seeding: ${e.message}")
+            Log.e(TAG, "Error during seed: ${e.message}")
         }
     }
 }

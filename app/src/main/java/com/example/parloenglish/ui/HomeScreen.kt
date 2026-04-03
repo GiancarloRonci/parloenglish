@@ -3,6 +3,7 @@ package com.example.parloenglish.ui
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
@@ -27,7 +28,8 @@ fun HomeScreen(
     onLogout: () -> Unit,
     onExitApp: () -> Unit,
     onStudyClick: () -> Unit,
-    onResetProgress: () -> Unit
+    onResetProgress: () -> Unit,
+    onDebugClick: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -55,6 +57,19 @@ fun HomeScreen(
                         }
                     },
                     icon = { Icon(Icons.Default.Style, contentDescription = null) },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text(text = "Debug Database") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            onDebugClick()
+                        }
+                    },
+                    icon = { Icon(Icons.Default.BugReport, contentDescription = null) },
                     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
 

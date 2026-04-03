@@ -16,11 +16,7 @@ import com.example.parloenglish.auth.ui.AuthScreen
 import com.example.parloenglish.auth.ui.AuthViewModel
 import com.example.parloenglish.auth.ui.AuthViewModelFactory
 import com.example.parloenglish.repository.VocabularyRepository
-import com.example.parloenglish.ui.HomeScreen
-import com.example.parloenglish.ui.StudyScreen
-import com.example.parloenglish.ui.StudyViewModel
-import com.example.parloenglish.ui.StudyViewModelFactory
-import com.example.parloenglish.ui.WelcomeScreen
+import com.example.parloenglish.ui.*
 import com.example.parloenglish.ui.theme.ParloEnglishTheme
 import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
@@ -102,6 +98,9 @@ class MainActivity : ComponentActivity() {
                                         vocabularyRepository.resetUserProgress(it.userId)
                                     }
                                 }
+                            },
+                            onDebugClick = {
+                                navController.navigate("debug")
                             }
                         )
                     }
@@ -116,6 +115,21 @@ class MainActivity : ComponentActivity() {
                             )
                             StudyScreen(
                                 viewModel = studyViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable("debug") {
+                        val userSession = (authState as? AuthState.Authenticated)?.userSession
+                            ?: authRepository.getCurrentUser()
+                        
+                        if (userSession != null) {
+                            val debugViewModel: DebugViewModel = viewModel(
+                                factory = DebugViewModelFactory(vocabularyRepository, userSession.userId)
+                            )
+                            DebugScreen(
+                                viewModel = debugViewModel,
                                 onBack = { navController.popBackStack() }
                             )
                         }
