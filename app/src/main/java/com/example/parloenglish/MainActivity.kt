@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,22 +15,32 @@ import com.example.parloenglish.auth.model.AuthState
 import com.example.parloenglish.auth.ui.AuthScreen
 import com.example.parloenglish.auth.ui.AuthViewModel
 import com.example.parloenglish.auth.ui.AuthViewModelFactory
+import com.example.parloenglish.repository.VocabularyRepository
 import com.example.parloenglish.ui.HomeScreen
+import com.example.parloenglish.ui.StudyScreen
+import com.example.parloenglish.ui.StudyViewModel
+import com.example.parloenglish.ui.StudyViewModelFactory
 import com.example.parloenglish.ui.WelcomeScreen
 import com.example.parloenglish.ui.theme.ParloEnglishTheme
+import kotlinx.coroutines.launch
+import kotlin.system.exitProcess
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         val authRepository = FirebaseAuthRepository()
+        val vocabularyRepository = VocabularyRepository()
+
+        lifecycleScope.launch {
+            vocabularyRepository.seedInitialData()
+        }
 
         enableEdgeToEdge()
         setContent {
             ParloEnglishTheme {
                 val navController = rememberNavController()
                 
-                // Usiamo un Factory per passare il repository al ViewModel
                 val authViewModel: AuthViewModel = viewModel(
                     factory = AuthViewModelFactory(authRepository)
                 )
@@ -43,7 +54,6 @@ class MainActivity : ComponentActivity() {
                     composable("welcome") {
                         WelcomeScreen(
                             onStartClick = { 
-                                // Se l'utente è già loggato, vai alla Home, altrimenti Auth
                                 if (authRepository.getCurrentUser() != null) {
                                     navController.navigate("home") {
                                         popUpTo("welcome") { inclusive = true }
@@ -78,8 +88,37 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("auth") {
                                     popUpTo("home") { inclusive = true }
                                 }
+                            },
+                            onExitApp = {
+                                finishAffinity()
+                                exitProcess(0)
+                            },
+                            onStudyClick = {
+                                navController.navigate("study")
+                            },
+                            onResetProgress = {
+                                userSession?.let {
+                                    lifecycleScope.launch {
+                                        vocabularyRepository.resetUserProgress(it.userId)
+                                    }
+                                }
                             }
                         )
+                    }
+
+                    composable("study") {
+                        val userSession = (authState as? AuthState.Authenticated)?.userSession
+                            ?: authRepository.getCurrentUser()
+                        
+                        if (userSession != null) {
+                            val studyViewModel: StudyViewModel = viewModel(
+                                factory = StudyViewModelFactory(vocabularyRepository, userSession.userId)
+                            )
+                            StudyScreen(
+                                viewModel = studyViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }
