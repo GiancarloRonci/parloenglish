@@ -27,13 +27,16 @@ fun HomeScreen(
     userSession: UserSession?,
     onLogout: () -> Unit,
     onExitApp: () -> Unit,
-    onStudyClick: () -> Unit,
+    onStudyClick: (String) -> Unit,
     onResetProgress: () -> Unit,
     onDebugClick: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    
+    // Stato per la selezione della sorgente: "DEFAULT", "CUSTOM", o "ALL"
+    var selectedSource by remember { mutableStateOf("ALL") }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -53,7 +56,7 @@ fun HomeScreen(
                     onClick = {
                         scope.launch {
                             drawerState.close()
-                            onStudyClick()
+                            onStudyClick(selectedSource)
                         }
                     },
                     icon = { Icon(Icons.Default.Style, contentDescription = null) },
@@ -165,10 +168,42 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Cosa vuoi imparare oggi?",
+                    text = "Cosa vuoi studiare oggi?",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Selettore Sorgente
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = selectedSource == "DEFAULT",
+                        onClick = { selectedSource = "DEFAULT" },
+                        label = { Text("Sistema") }
+                    )
+                    FilterChip(
+                        selected = selectedSource == "CUSTOM",
+                        onClick = { selectedSource = "CUSTOM" },
+                        label = { Text("Mie Carte") }
+                    )
+                    FilterChip(
+                        selected = selectedSource == "ALL",
+                        onClick = { selectedSource = "ALL" },
+                        label = { Text("Entrambe") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Inizia subito",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.align(Alignment.Start)
@@ -176,11 +211,10 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Segnaposto per le lezioni future
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LessonPlaceholderCard("Grammatica Base", "10 minuti", onStudyClick)
-                    LessonPlaceholderCard("Vocabolario: Viaggi", "15 minuti", onStudyClick)
-                    LessonPlaceholderCard("Esercizio di Ascolto", "5 minuti", onStudyClick)
+                    LessonPlaceholderCard("Sessione Rapida", "Tutte le carte in scadenza") {
+                        onStudyClick(selectedSource)
+                    }
                 }
             }
         }

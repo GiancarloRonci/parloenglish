@@ -11,9 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * States representing the UI for the study session.
- */
 sealed class StudyState {
     object Loading : StudyState()
     data class Success(val cards: List<Pair<VocabularyItem, UserProgress?>>) : StudyState()
@@ -21,12 +18,10 @@ sealed class StudyState {
     object Empty : StudyState()
 }
 
-/**
- * ViewModel responsible for managing the study session logic.
- */
 class StudyViewModel(
     private val repository: VocabularyRepository,
-    private val userId: String
+    private val userId: String,
+    private val sourceType: String? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StudyState>(StudyState.Loading)
@@ -42,14 +37,10 @@ class StudyViewModel(
         loadDueCards()
     }
 
-    /**
-     * Fetches cards that are due for review from the repository.
-     */
     fun loadDueCards() {
         viewModelScope.launch {
             _uiState.value = StudyState.Loading
-            // For now, we only load A1 level cards
-            val result = repository.getDueCards(userId, "A1")
+            val result = repository.getDueCards(userId, "A1", sourceType)
             result.onSuccess { cards ->
                 if (cards.isEmpty()) {
                     _uiState.value = StudyState.Empty
@@ -64,23 +55,15 @@ class StudyViewModel(
         }
     }
 
-    /**
-     * Reveals the English translation of the current card.
-     */
     fun revealTranslation() {
         _isRevealed.value = true
     }
 
-    /**
-     * Updates the progress for the current card and moves to the next eligible one.
-     * @param days The interval in days selected by the user.
-     */
     fun markAsLearnedWithInterval(days: Int) {
         val state = _uiState.value
         if (state is StudyState.Success) {
             val currentPair = state.cards[_currentIndex.value]
             viewModelScope.launch {
-                // Update progress in the database
                 repository.updateCardProgress(
                     userId = userId,
                     vocabularyId = currentPair.first.id,
@@ -88,12 +71,10 @@ class StudyViewModel(
                     days = days
                 )
                 
-                // Move to the next card in the current session list
                 if (_currentIndex.value < state.cards.size - 1) {
                     _currentIndex.value += 1
-                    _isRevealed.value = false // Hide the answer for the new card
+                    _isRevealed.value = false
                 } else {
-                    // Session finished, no more due cards in this batch
                     _uiState.value = StudyState.Empty
                 }
             }
@@ -101,17 +82,15 @@ class StudyViewModel(
     }
 }
 
-/**
- * Factory to create StudyViewModel with custom parameters.
- */
 class StudyViewModelFactory(
     private val repository: VocabularyRepository,
-    private val userId: String
+    private val userId: String,
+    private val sourceType: String? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StudyViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StudyViewModel(repository, userId) as T
+            return StudyViewModel(repository, userId, sourceType) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

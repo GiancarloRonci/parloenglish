@@ -7,9 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.parloenglish.auth.FirebaseAuthRepository
 import com.example.parloenglish.auth.model.AuthState
 import com.example.parloenglish.auth.ui.AuthScreen
@@ -89,8 +91,8 @@ class MainActivity : ComponentActivity() {
                                 finishAffinity()
                                 exitProcess(0)
                             },
-                            onStudyClick = {
-                                navController.navigate("study")
+                            onStudyClick = { source ->
+                                navController.navigate("study/$source")
                             },
                             onResetProgress = {
                                 userSession?.let {
@@ -105,13 +107,21 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable("study") {
+                    composable(
+                        route = "study/{sourceType}",
+                        arguments = listOf(navArgument("sourceType") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val sourceType = backStackEntry.arguments?.getString("sourceType")
                         val userSession = (authState as? AuthState.Authenticated)?.userSession
                             ?: authRepository.getCurrentUser()
                         
                         if (userSession != null) {
                             val studyViewModel: StudyViewModel = viewModel(
-                                factory = StudyViewModelFactory(vocabularyRepository, userSession.userId)
+                                factory = StudyViewModelFactory(
+                                    vocabularyRepository, 
+                                    userSession.userId,
+                                    if (sourceType == "ALL") null else sourceType
+                                )
                             )
                             StudyScreen(
                                 viewModel = studyViewModel,

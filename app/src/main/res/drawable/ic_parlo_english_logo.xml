@@ -1,0 +1,45 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#F5F5F5"
+        android:pathData="M54,54m-45,0a45,45 0,1 1,90 0a45,45 0,1 1,-90 0" />
+
+    <!-- Italian Flag Base (Speech Bubble Shape) -->
+    <!-- Green -->
+    <path
+        android:fillColor="#009246"
+        android:pathData="M30,40h12v30h-12z" />
+    <!-- White -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,40h12v30h-12z" />
+    <!-- Red -->
+    <path
+        android:fillColor="#CE2B37"
+        android:pathData="M54,40h12v30h-12z" />
+
+    <!-- English Speech Bubble Overlay -->
+    <path
+        android:fillColor="#00247D"
+        android:pathData="M60,35h25a4,4 0,0 1,4 4v18a4,4 0,0 1,-4 4h-15l-8,8v-8a4,4 0,0 1,-4 -4v-18a4,4 0,0 1,4 -4z" />
+
+    <!-- White Cross (UK Symbolism) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,45h29v2h-29z M73,35v25h2v-25z" />
+
+    <!-- Red Cross (UK Symbolism) -->
+    <path
+        android:fillColor="#CF142B"
+        android:pathData="M60,45.5h29v1h-29z M73.5,35v25h1v-25z" />
+
+    <!-- Stylized "E" for English -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,48h4v2h-4z M38,52h4v2h-4z M38,56h4v2h-4z" />
+</vector>
