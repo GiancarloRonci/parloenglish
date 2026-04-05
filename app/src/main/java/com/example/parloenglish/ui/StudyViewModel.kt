@@ -21,7 +21,9 @@ sealed class StudyState {
 class StudyViewModel(
     private val repository: VocabularyRepository,
     private val userId: String,
-    private val sourceType: String? = null
+    private val sourceType: String? = null,
+    private val level: String = "A1",
+    private val categories: List<String>? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StudyState>(StudyState.Loading)
@@ -40,7 +42,7 @@ class StudyViewModel(
     fun loadDueCards() {
         viewModelScope.launch {
             _uiState.value = StudyState.Loading
-            val result = repository.getDueCards(userId, "A1", sourceType)
+            val result = repository.getDueCards(userId, level, sourceType, categories)
             result.onSuccess { cards ->
                 if (cards.isEmpty()) {
                     _uiState.value = StudyState.Empty
@@ -85,12 +87,14 @@ class StudyViewModel(
 class StudyViewModelFactory(
     private val repository: VocabularyRepository,
     private val userId: String,
-    private val sourceType: String? = null
+    private val sourceType: String? = null,
+    private val level: String = "A1",
+    private val categories: List<String>? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StudyViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StudyViewModel(repository, userId, sourceType) as T
+            return StudyViewModel(repository, userId, sourceType, level, categories) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

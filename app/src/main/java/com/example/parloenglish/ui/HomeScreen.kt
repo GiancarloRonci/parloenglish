@@ -1,7 +1,9 @@
 package com.example.parloenglish.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ExitToApp
@@ -25,9 +27,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     userSession: UserSession?,
+    homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
     onExitApp: () -> Unit,
-    onStudyClick: (String) -> Unit,
+    onStudyClick: (String, String, List<String>) -> Unit,
     onResetProgress: () -> Unit,
     onDebugClick: () -> Unit
 ) {
@@ -35,8 +38,12 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     
-    // Stato per la selezione della sorgente: "DEFAULT", "CUSTOM", o "ALL"
     var selectedSource by remember { mutableStateOf("ALL") }
+    var selectedLevel by remember { mutableStateOf("A1") }
+    val selectedCategories = remember { mutableStateListOf<String>() }
+    
+    val allCategories by homeViewModel.categories.collectAsState()
+    val levels = listOf("A1", "A2", "B1", "B2", "C1", "C2")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -56,7 +63,7 @@ fun HomeScreen(
                     onClick = {
                         scope.launch {
                             drawerState.close()
-                            onStudyClick(selectedSource)
+                            onStudyClick(selectedSource, selectedLevel, selectedCategories.toList())
                         }
                     },
                     icon = { Icon(Icons.Default.Style, contentDescription = null) },
@@ -171,14 +178,15 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Cosa vuoi studiare oggi?",
+                    text = "Configura la tua sessione",
                     style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Start)
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Selettore Sorgente
+                Text(text = "Sorgente", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -200,49 +208,59 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Inizia subito",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LessonPlaceholderCard("Sessione Rapida", "Tutte le carte in scadenza") {
-                        onStudyClick(selectedSource)
+                Text(text = "Livello", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    levels.forEach { level ->
+                        FilterChip(
+                            selected = selectedLevel == level,
+                            onClick = { selectedLevel = level },
+                            label = { Text(level) }
+                        )
                     }
                 }
-            }
-        }
-    }
-}
 
-@Composable
-fun LessonPlaceholderCard(title: String, duration: String, onClick: () -> Unit) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = title, fontWeight = FontWeight.Bold)
-                Text(text = duration, style = MaterialTheme.typography.bodySmall)
+                if (allCategories.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Categorie", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        allCategories.forEach { category ->
+                            FilterChip(
+                                selected = selectedCategories.contains(category),
+                                onClick = {
+                                    if (selectedCategories.contains(category)) {
+                                        selectedCategories.remove(category)
+                                    } else {
+                                        selectedCategories.add(category)
+                                    }
+                                },
+                                label = { Text(category) }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = { onStudyClick(selectedSource, selectedLevel, selectedCategories.toList()) },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                ) {
+                    Text("Inizia Studio", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
             }
-            Text(
-                text = "Inizia",
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }

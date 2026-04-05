@@ -17,19 +17,36 @@ class VocabularyRepository(
     private val progressCollection = firestore.collection("user_progress")
 
     private val initialItems = listOf(
-        VocabularyItem(italian = "Ciao", english = "Hello", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Grazie", english = "Thank you", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Per favore", english = "Please", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Sì", english = "Yes", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "No", english = "No", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Mi chiamo...", english = "My name is...", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Come stai?", english = "How are you?", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Piacere di conoscerti", english = "Nice to meet you", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Scusa", english = "Excuse me", level = "A1", sourceType = "DEFAULT"),
-        VocabularyItem(italian = "Arrivederci", english = "Goodbye", level = "A1", sourceType = "DEFAULT")
+        VocabularyItem(italian = "Ciao", english = "Hello", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
+        VocabularyItem(italian = "Grazie", english = "Thank you", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
+        VocabularyItem(italian = "Per favore", english = "Please", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Sì", english = "Yes", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "No", english = "No", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Mi chiamo...", english = "My name is...", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Introductions")),
+        VocabularyItem(italian = "Come stai?", english = "How are you?", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
+        VocabularyItem(italian = "Piacere di conoscerti", english = "Nice to meet you", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Introductions")),
+        VocabularyItem(italian = "Scusa", english = "Excuse me", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Arrivederci", english = "Goodbye", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings"))
     )
 
-    suspend fun getVocabularyByLevelAndSource(level: String, sourceType: String?): Result<List<VocabularyItem>> {
+    suspend fun getAllCategories(): Result<List<String>> {
+        return try {
+            val snapshot = vocabularyCollection.get().await()
+            val categories = snapshot.documents
+                .flatMap { (it.get("categories") as? List<*>)?.filterIsInstance<String>() ?: emptyList() }
+                .distinct()
+                .filter { it.isNotEmpty() }
+                .sorted()
+            
+            Log.d(TAG, "Categorie trovate nel DB: $categories")
+            Result.success(categories)
+        } catch (e: Exception) {
+            Log.e(TAG, "Errore getAllCategories: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVocabularyFiltered(level: String, sourceType: String?, categories: List<String>?): Result<List<VocabularyItem>> {
         return try {
             var query = vocabularyCollection.whereEqualTo("level", level)
             if (sourceType != null && sourceType != "ALL") {
@@ -37,12 +54,20 @@ class VocabularyRepository(
             }
             
             val snapshot = query.get().await()
-            val items = snapshot.documents.mapNotNull { doc ->
+            var items = snapshot.documents.mapNotNull { doc ->
                 doc.toObject(VocabularyItem::class.java)?.copy(id = doc.id)
             }
+            
+            // Filtro manuale per categorie (più flessibile di quello Firestore per array)
+            if (!categories.isNullOrEmpty()) {
+                items = items.filter { item ->
+                    item.categories.any { it in categories }
+                }
+            }
+            
             Result.success(items)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore getVocabularyByLevelAndSource: ${e.message}")
+            Log.e(TAG, "Errore getVocabularyFiltered: ${e.message}")
             Result.failure(e)
         }
     }
@@ -72,19 +97,21 @@ class VocabularyRepository(
         }
     }
 
-    suspend fun getDueCards(userId: String, level: String, sourceType: String? = null): Result<List<Pair<VocabularyItem, UserProgress?>>> {
+    suspend fun getDueCards(
+        userId: String, 
+        level: String, 
+        sourceType: String? = null,
+        categories: List<String>? = null
+    ): Result<List<Pair<VocabularyItem, UserProgress?>>> {
         return try {
-            Log.d(TAG, "Recupero carte per utente: $userId, livello: $level, sorgente: $sourceType")
+            val allVocab = getVocabularyFiltered(level, sourceType, categories).getOrThrow()
             
-            val allVocab = getVocabularyByLevelAndSource(level, sourceType).getOrThrow()
-            
-            // Se cerchiamo le DEFAULT e il DB è vuoto, facciamo il seed
-            if (sourceType == "DEFAULT" || sourceType == "ALL" || sourceType == null) {
-                val defaultItemsInDb = allVocab.count { it.sourceType == "DEFAULT" }
-                if (defaultItemsInDb < initialItems.size) {
-                    seedInitialData()
-                    return getDueCards(userId, level, sourceType)
-                }
+            if (allVocab.isEmpty() && (sourceType == "DEFAULT" || sourceType == "ALL" || sourceType == null)) {
+                // Se non troviamo nulla, forziamo il seed e riproviamo una volta
+                seedInitialData()
+                val retryVocab = getVocabularyFiltered(level, sourceType, categories).getOrThrow()
+                if (retryVocab.isEmpty()) return Result.success(emptyList())
+                return getDueCards(userId, level, sourceType, categories)
             }
 
             val progressSnapshot = progressCollection
@@ -98,7 +125,6 @@ class VocabularyRepository(
             }
 
             val now = Timestamp.now()
-            
             val dueCards = allVocab.mapNotNull { item ->
                 val progress = userProgressMap[item.id]
                 if (progress == null || progress.nextReview == null || progress.nextReview <= now) {
@@ -108,7 +134,6 @@ class VocabularyRepository(
                 }
             }
             
-            Log.d(TAG, "Carte da studiare trovate: ${dueCards.size}")
             Result.success(dueCards)
         } catch (e: Exception) {
             Log.e(TAG, "Errore in getDueCards: ${e.message}")
@@ -160,7 +185,6 @@ class VocabularyRepository(
             for (doc in snapshot.documents) {
                 doc.reference.delete().await()
             }
-            Log.d(TAG, "Progressi cancellati correttamente per $userId")
             seedInitialData()
             Result.success(Unit)
         } catch (e: Exception) {
@@ -179,14 +203,25 @@ class VocabularyRepository(
 
     suspend fun seedInitialData() {
         try {
+            Log.d(TAG, "Avvio verifica e aggiornamento dati di sistema...")
             val snapshot = vocabularyCollection.whereEqualTo("sourceType", "DEFAULT").get().await()
-            val existingItalians = snapshot.documents.mapNotNull { it.getString("italian") }.toSet()
+            val existingDocs = snapshot.documents.associateBy { it.getString("italian") ?: "" }
 
             for (item in initialItems) {
-                if (!existingItalians.contains(item.italian)) {
+                val existingDoc = existingDocs[item.italian]
+                if (existingDoc == null) {
+                    Log.d(TAG, "Inserimento nuova parola: ${item.italian}")
                     vocabularyCollection.add(item).await()
+                } else {
+                    // Aggiorniamo le categorie se mancano o sono diverse
+                    val currentCats = (existingDoc.get("categories") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+                    if (currentCats.isEmpty() || currentCats != item.categories) {
+                        Log.d(TAG, "Aggiornamento categorie per: ${item.italian}")
+                        existingDoc.reference.update("categories", item.categories).await()
+                    }
                 }
             }
+            Log.d(TAG, "Verifica completata.")
         } catch (e: Exception) {
             Log.e(TAG, "Errore seeding: ${e.message}")
         }

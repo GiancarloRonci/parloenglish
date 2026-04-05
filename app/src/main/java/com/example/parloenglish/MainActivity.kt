@@ -43,6 +43,11 @@ class MainActivity : ComponentActivity() {
                     factory = AuthViewModelFactory(authRepository)
                 )
                 
+                // Nuovo ViewModel per gestire le categorie nella Home
+                val homeViewModel: HomeViewModel = viewModel(
+                    factory = HomeViewModelFactory(vocabularyRepository)
+                )
+                
                 val authState by authViewModel.authState.collectAsState()
 
                 NavHost(
@@ -81,6 +86,7 @@ class MainActivity : ComponentActivity() {
                             
                         HomeScreen(
                             userSession = userSession,
+                            homeViewModel = homeViewModel,
                             onLogout = {
                                 authViewModel.logout()
                                 navController.navigate("auth") {
@@ -91,8 +97,9 @@ class MainActivity : ComponentActivity() {
                                 finishAffinity()
                                 exitProcess(0)
                             },
-                            onStudyClick = { source ->
-                                navController.navigate("study/$source")
+                            onStudyClick = { source, level, categories ->
+                                val catsParam = if (categories.isEmpty()) "NONE" else categories.joinToString(",")
+                                navController.navigate("study/$source/$level/$catsParam")
                             },
                             onResetProgress = {
                                 userSession?.let {
@@ -108,10 +115,23 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        route = "study/{sourceType}",
-                        arguments = listOf(navArgument("sourceType") { type = NavType.StringType })
+                        route = "study/{sourceType}/{level}/{categories}",
+                        arguments = listOf(
+                            navArgument("sourceType") { type = NavType.StringType },
+                            navArgument("level") { type = NavType.StringType },
+                            navArgument("categories") { type = NavType.StringType }
+                        )
                     ) { backStackEntry ->
                         val sourceType = backStackEntry.arguments?.getString("sourceType")
+                        val level = backStackEntry.arguments?.getString("level") ?: "A1"
+                        val categoriesStr = backStackEntry.arguments?.getString("categories")
+                        
+                        val categoriesList = if (categoriesStr == null || categoriesStr == "NONE") {
+                            null
+                        } else {
+                            categoriesStr.split(",")
+                        }
+
                         val userSession = (authState as? AuthState.Authenticated)?.userSession
                             ?: authRepository.getCurrentUser()
                         
@@ -120,7 +140,9 @@ class MainActivity : ComponentActivity() {
                                 factory = StudyViewModelFactory(
                                     vocabularyRepository, 
                                     userSession.userId,
-                                    if (sourceType == "ALL") null else sourceType
+                                    if (sourceType == "ALL") null else sourceType,
+                                    level,
+                                    categoriesList
                                 )
                             )
                             StudyScreen(
