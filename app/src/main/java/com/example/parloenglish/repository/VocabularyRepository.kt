@@ -17,7 +17,7 @@ class VocabularyRepository(
     private val progressCollection = firestore.collection("user_progress")
 
     private val initialItems = listOf(
-        // --- LIVELLO A1 ---
+        // --- LEVEL A1 ---
         VocabularyItem(italian = "Ciao", english = "Hello", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
         VocabularyItem(italian = "Grazie", english = "Thank you", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
         VocabularyItem(italian = "Per favore", english = "Please", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
@@ -29,7 +29,7 @@ class VocabularyRepository(
         VocabularyItem(italian = "Scusa", english = "Excuse me", level = "A1", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Arrivederci", english = "Goodbye", level = "A1", sourceType = "DEFAULT", categories = listOf("General", "Greetings")),
 
-        // --- LIVELLO A2 ---
+        // --- LEVEL A2 ---
         VocabularyItem(italian = "Colazione", english = "Breakfast", level = "A2", sourceType = "DEFAULT", categories = listOf("Food", "Daily Life")),
         VocabularyItem(italian = "Pranzo", english = "Lunch", level = "A2", sourceType = "DEFAULT", categories = listOf("Food")),
         VocabularyItem(italian = "Cena", english = "Dinner", level = "A2", sourceType = "DEFAULT", categories = listOf("Food")),
@@ -45,8 +45,13 @@ class VocabularyRepository(
         VocabularyItem(italian = "Ascoltare musica", english = "To listen to music", level = "A2", sourceType = "DEFAULT", categories = listOf("Hobbies")),
         VocabularyItem(italian = "Cucinare", english = "To cook", level = "A2", sourceType = "DEFAULT", categories = listOf("Daily Life", "Hobbies")),
         VocabularyItem(italian = "Comprare vestiti", english = "To buy clothes", level = "A2", sourceType = "DEFAULT", categories = listOf("Shopping")),
+        VocabularyItem(italian = "Stanco", english = "Tired", level = "A2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Felice", english = "Happy", level = "A2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Triste", english = "Sad", level = "A2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Arrabbiato", english = "Angry", level = "A2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Prendere il treno", english = "To take the train", level = "A2", sourceType = "DEFAULT", categories = listOf("Travel")),
 
-        // --- LIVELLO B1 ---
+        // --- LEVEL B1 ---
         VocabularyItem(italian = "In effetti", english = "Actually", level = "B1", sourceType = "DEFAULT", categories = listOf("Connectors", "Social")),
         VocabularyItem(italian = "Per fortuna", english = "Luckily", level = "B1", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Decisione difficile", english = "Difficult decision", level = "B1", sourceType = "DEFAULT", categories = listOf("General")),
@@ -62,8 +67,13 @@ class VocabularyRepository(
         VocabularyItem(italian = "Cercare (qualcosa di perso)", english = "To look for", level = "B1", sourceType = "DEFAULT", categories = listOf("Phrasal Verbs")),
         VocabularyItem(italian = "Scoprire", english = "To find out", level = "B1", sourceType = "DEFAULT", categories = listOf("Phrasal Verbs")),
         VocabularyItem(italian = "Andare d'accordo", english = "To get along", level = "B1", sourceType = "DEFAULT", categories = listOf("Phrasal Verbs", "Social")),
+        VocabularyItem(italian = "Rimandare a domani", english = "To postpone until tomorrow", level = "B1", sourceType = "DEFAULT", categories = listOf("Daily Life", "Work")),
+        VocabularyItem(italian = "Sembrare", english = "To seem", level = "B1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Evitare (qualcuno)", english = "To avoid someone", level = "B1", sourceType = "DEFAULT", categories = listOf("Social")),
+        VocabularyItem(italian = "Sperare", english = "To hope", level = "B1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Divertente", english = "Funny", level = "B1", sourceType = "DEFAULT", categories = listOf("General", "Social")),
 
-        // --- LIVELLO B2 ---
+        // --- LEVEL B2 ---
         VocabularyItem(italian = "Nonostante ciò", english = "Nevertheless", level = "B2", sourceType = "DEFAULT", categories = listOf("Academic", "Connectors")),
         VocabularyItem(italian = "Inoltre", english = "Furthermore", level = "B2", sourceType = "DEFAULT", categories = listOf("Academic", "Connectors")),
         VocabularyItem(italian = "Raggiungere un obiettivo", english = "To achieve a goal", level = "B2", sourceType = "DEFAULT", categories = listOf("Business", "General")),
@@ -84,12 +94,22 @@ class VocabularyRepository(
         VocabularyItem(italian = "Consigliare", english = "To advise", level = "B2", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Lamentarsi", english = "To complain", level = "B2", sourceType = "DEFAULT", categories = listOf("Social")),
         VocabularyItem(italian = "Preoccupato", english = "Concerned", level = "B2", sourceType = "DEFAULT", categories = listOf("Social")),
+        VocabularyItem(italian = "Gestire", english = "To manage", level = "B2", sourceType = "DEFAULT", categories = listOf("Business", "Work")),
+        VocabularyItem(italian = "Convincere", english = "To convince", level = "B2", sourceType = "DEFAULT", categories = listOf("Social", "Business")),
+        VocabularyItem(italian = "Testardo", english = "Stubborn", level = "B2", sourceType = "DEFAULT", categories = listOf("General", "Social")),
+        VocabularyItem(italian = "Affidabile", english = "Reliable", level = "B2", sourceType = "DEFAULT", categories = listOf("Social", "Business")),
+        VocabularyItem(italian = "Volubile (umore)", english = "Moody", level = "B2", sourceType = "DEFAULT", categories = listOf("General", "Social")),
+        VocabularyItem(italian = "Evidente (chiaro)", english = "Apparent", level = "B2", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
+        VocabularyItem(italian = "Ignorare", english = "To ignore", level = "B2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Apprezzare", english = "To appreciate", level = "B2", sourceType = "DEFAULT", categories = listOf("Social", "General")),
+        VocabularyItem(italian = "Incoraggiare (qualcuno)", english = "To encourage someone", level = "B2", sourceType = "DEFAULT", categories = listOf("Social")),
+        VocabularyItem(italian = "Evitare di fare qualcosa", english = "To avoid doing something", level = "B2", sourceType = "DEFAULT", categories = listOf("Grammar", "General")),
 
-        // --- LIVELLO C1 ---
+        // --- LEVEL C1 ---
         VocabularyItem(italian = "Fondamentale", english = "Essential", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
         VocabularyItem(italian = "Comprensibile", english = "Comprehensive", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic")),
         VocabularyItem(italian = "Sorprendente", english = "Astonishing", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Incoraggiare", english = "To foster", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Business")),
+        VocabularyItem(italian = "Incoraggiare (promuovere)", english = "To foster", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Business")),
         VocabularyItem(italian = "Attuare", english = "To implement", level = "C1", sourceType = "DEFAULT", categories = listOf("Business", "Academic")),
         VocabularyItem(italian = "Notevole", english = "Remarkable", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
         VocabularyItem(italian = "Valutare", english = "To assess", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Business")),
@@ -101,8 +121,13 @@ class VocabularyRepository(
         VocabularyItem(italian = "Iniziativa", english = "Initiative", level = "C1", sourceType = "DEFAULT", categories = listOf("Business")),
         VocabularyItem(italian = "Trascurare", english = "To overlook", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Affrontare (una sfida)", english = "To tackle", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Business")),
+        VocabularyItem(italian = "Vulnerabile", english = "Vulnerable", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Social")),
+        VocabularyItem(italian = "Spontaneo", english = "Spontaneous", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Ipotesi", english = "Hypothesis", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic")),
+        VocabularyItem(italian = "Risultato finale", english = "Outcome", level = "C1", sourceType = "DEFAULT", categories = listOf("Business", "Academic")),
+        VocabularyItem(italian = "Coerente", english = "Consistent", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
 
-        // --- LIVELLO C2 ---
+        // --- LEVEL C2 ---
         VocabularyItem(italian = "Ambiguo", english = "Ambiguous", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
         VocabularyItem(italian = "Inherentemente", english = "Inherently", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
         VocabularyItem(italian = "Incessante", english = "Relentless", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
@@ -118,63 +143,58 @@ class VocabularyRepository(
         VocabularyItem(italian = "Inconcepibile", english = "Inconceivable", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Eloquente", english = "Eloquent", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
         VocabularyItem(italian = "Prestigioso", english = "Prestigious", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
-
-        // --- ALTRE CARTE PER ARRIVARE A 100+ ---
-        VocabularyItem(italian = "Salute", english = "Health", level = "A2", sourceType = "DEFAULT", categories = listOf("Daily Life")),
-        VocabularyItem(italian = "Esercizio fisico", english = "Exercise", level = "A2", sourceType = "DEFAULT", categories = listOf("Daily Life", "Hobbies")),
-        VocabularyItem(italian = "Viaggio di lavoro", english = "Business trip", level = "B1", sourceType = "DEFAULT", categories = listOf("Work", "Travel")),
-        VocabularyItem(italian = "Riunione", english = "Meeting", level = "B1", sourceType = "DEFAULT", categories = listOf("Work")),
-        VocabularyItem(italian = "Stipendio", english = "Salary", level = "B1", sourceType = "DEFAULT", categories = listOf("Work")),
-        VocabularyItem(italian = "Preoccuparsi", english = "To worry", level = "B1", sourceType = "DEFAULT", categories = listOf("Daily Life", "Social")),
-        VocabularyItem(italian = "Improvvisamente", english = "Suddenly", level = "B1", sourceType = "DEFAULT", categories = listOf("Connectors")),
-        VocabularyItem(italian = "Sfortunatamente", english = "Unfortunately", level = "B1", sourceType = "DEFAULT", categories = listOf("Connectors")),
-        VocabularyItem(italian = "Incredibile", english = "Incredible", level = "B1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Competenza", english = "Competence", level = "B2", sourceType = "DEFAULT", categories = listOf("Business")),
-        VocabularyItem(italian = "Collaborazione", english = "Collaboration", level = "B2", sourceType = "DEFAULT", categories = listOf("Business", "Social")),
-        VocabularyItem(italian = "Sostenibile", english = "Sustainable", level = "B2", sourceType = "DEFAULT", categories = listOf("Nature", "Business")),
-        VocabularyItem(italian = "Innovativo", english = "Innovative", level = "B2", sourceType = "DEFAULT", categories = listOf("Technology", "Business")),
-        VocabularyItem(italian = "Flessibilità", english = "Flexibility", level = "B2", sourceType = "DEFAULT", categories = listOf("Work", "General")),
-        VocabularyItem(italian = "Analizzare", english = "To analyze", level = "B2", sourceType = "DEFAULT", categories = listOf("Academic", "Business")),
-        VocabularyItem(italian = "Contribuire", english = "To contribute", level = "B2", sourceType = "DEFAULT", categories = listOf("General", "Business")),
-        VocabularyItem(italian = "Conseguenza", english = "Consequence", level = "B2", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
-        VocabularyItem(italian = "Evidente", english = "Obvious", level = "B2", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Persuadere", english = "To persuade", level = "B2", sourceType = "DEFAULT", categories = listOf("Social", "Business")),
-        VocabularyItem(italian = "Negoziare", english = "To negotiate", level = "B2", sourceType = "DEFAULT", categories = listOf("Business")),
-        VocabularyItem(italian = "Risultato", english = "Outcome", level = "C1", sourceType = "DEFAULT", categories = listOf("Business", "Academic")),
-        VocabularyItem(italian = "Valutazione", english = "Evaluation", level = "C1", sourceType = "DEFAULT", categories = listOf("Work", "Academic")),
-        VocabularyItem(italian = "Prospettiva", english = "Perspective", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
-        VocabularyItem(italian = "Involontario", english = "Involuntary", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Significativo", english = "Significant", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Business")),
-        VocabularyItem(italian = "Trasformazione", english = "Transformation", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Efficiente", english = "Efficient", level = "C1", sourceType = "DEFAULT", categories = listOf("Work", "Business")),
-        VocabularyItem(italian = "Complesso", english = "Intricate", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
-        VocabularyItem(italian = "Controverso", english = "Controversial", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Social")),
-        VocabularyItem(italian = "Ipotesi", english = "Hypothesis", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic")),
-        VocabularyItem(italian = "Eccezionale", english = "Exceptional", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Versatile", english = "Versatile", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Vulnerabile", english = "Vulnerable", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Social")),
-        VocabularyItem(italian = "Fondamentale", english = "Fundamental", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic")),
-        VocabularyItem(italian = "Integrità", english = "Integrity", level = "C1", sourceType = "DEFAULT", categories = listOf("Social", "Business")),
-        VocabularyItem(italian = "Spontaneo", english = "Spontaneous", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Autonomia", english = "Autonomy", level = "C1", sourceType = "DEFAULT", categories = listOf("Business", "Social")),
-        VocabularyItem(italian = "Coerente", english = "Consistent", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
-        VocabularyItem(italian = "Paradossale", english = "Paradoxical", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
-        VocabularyItem(italian = "Prevaricare", english = "To prevail", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
-        VocabularyItem(italian = "Meticoloso", english = "Meticulous", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Efimero", english = "Ephemeral", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic", "Nature")),
         VocabularyItem(italian = "Enigmatico", english = "Enigmatic", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Inevitabilmente", english = "Inevitably", level = "C2", sourceType = "DEFAULT", categories = listOf("Connectors", "Academic")),
-        VocabularyItem(italian = "Intrinseco", english = "Intrinsic", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
-        VocabularyItem(italian = "Superfluo", english = "Superfluous", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Prudenza", english = "Prudence", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
-        VocabularyItem(italian = "Eloquentemente", english = "Eloquently", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic")),
-        VocabularyItem(italian = "Scarsità", english = "Scarcity", level = "C2", sourceType = "DEFAULT", categories = listOf("General", "Business")),
+        VocabularyItem(italian = "Meticoloso", english = "Meticulous", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
         VocabularyItem(italian = "Resilienza", english = "Resilience", level = "C2", sourceType = "DEFAULT", categories = listOf("Social", "General")),
         VocabularyItem(italian = "Preminente", english = "Prominent", level = "C2", sourceType = "DEFAULT", categories = listOf("General", "Business")),
-        VocabularyItem(italian = "Sincronizzare", english = "To synchronize", level = "C2", sourceType = "DEFAULT", categories = listOf("Technology")),
-        VocabularyItem(italian = "Incomparabile", english = "Incomparable", level = "C2", sourceType = "DEFAULT", categories = listOf("General"))
+        VocabularyItem(italian = "Superfluo", english = "Superfluous", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
+
+        // --- ADDITIONAL CARDS TO REACH 200+ ---
+        VocabularyItem(italian = "Aeroporto", english = "Airport", level = "A2", sourceType = "DEFAULT", categories = listOf("Travel")),
+        VocabularyItem(italian = "Supermercato", english = "Supermarket", level = "A2", sourceType = "DEFAULT", categories = listOf("Daily Life", "Shopping")),
+        VocabularyItem(italian = "Ospedale", english = "Hospital", level = "A2", sourceType = "DEFAULT", categories = listOf("Daily Life")),
+        VocabularyItem(italian = "Ufficio", english = "Office", level = "A2", sourceType = "DEFAULT", categories = listOf("Work")),
+        VocabularyItem(italian = "Biblioteca", english = "Library", level = "A2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Ambizione", english = "Ambition", level = "B1", sourceType = "DEFAULT", categories = listOf("Business", "General")),
+        VocabularyItem(italian = "Inquinamento", english = "Pollution", level = "B1", sourceType = "DEFAULT", categories = listOf("Nature")),
+        VocabularyItem(italian = "Ricerca", english = "Research", level = "B1", sourceType = "DEFAULT", categories = listOf("Academic")),
+        VocabularyItem(italian = "Evidenza", english = "Evidence", level = "B1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
+        VocabularyItem(italian = "Prevedere", english = "To predict", level = "B1", sourceType = "DEFAULT", categories = listOf("General", "Technology")),
+        VocabularyItem(italian = "Menagramo", english = "Jinx", level = "B2", sourceType = "DEFAULT", categories = listOf("Idioms", "Slang")),
+        VocabularyItem(italian = "Pezzo di torta (facilissimo)", english = "A piece of cake", level = "B2", sourceType = "DEFAULT", categories = listOf("Idioms")),
+        VocabularyItem(italian = "Girare intorno al punto", english = "To beat around the bush", level = "B2", sourceType = "DEFAULT", categories = listOf("Idioms")),
+        VocabularyItem(italian = "In un batter d'occhio", english = "In the blink of an eye", level = "B2", sourceType = "DEFAULT", categories = listOf("Idioms")),
+        VocabularyItem(italian = "Rompere il ghiaccio", english = "To break the ice", level = "B2", sourceType = "DEFAULT", categories = listOf("Idioms", "Social")),
+        VocabularyItem(italian = "Cyber-sicurezza", english = "Cybersecurity", level = "B2", sourceType = "DEFAULT", categories = listOf("Technology", "Business")),
+        VocabularyItem(italian = "Intelligenza Artificiale", english = "Artificial Intelligence", level = "B2", sourceType = "DEFAULT", categories = listOf("Technology")),
+        VocabularyItem(italian = "Innovare", english = "To innovate", level = "B2", sourceType = "DEFAULT", categories = listOf("Business", "Technology")),
+        VocabularyItem(italian = "Trasmettere", english = "To broadcast", level = "B2", sourceType = "DEFAULT", categories = listOf("Technology", "General")),
+        VocabularyItem(italian = "Aggiornare", english = "To update", level = "B2", sourceType = "DEFAULT", categories = listOf("Technology", "Daily Life")),
+        VocabularyItem(italian = "Perspicace", english = "Insightful", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
+        VocabularyItem(italian = "Contraddittorio", english = "Contradictory", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
+        VocabularyItem(italian = "Sperimentale", english = "Experimental", level = "C1", sourceType = "DEFAULT", categories = listOf("Academic", "Science")),
+        VocabularyItem(italian = "Infrastruttura", english = "Infrastructure", level = "C1", sourceType = "DEFAULT", categories = listOf("Business", "General")),
+        VocabularyItem(italian = "Convincente", english = "Compelling", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Social")),
+        VocabularyItem(italian = "Autonomia (personale)", english = "Self-governance", level = "C1", sourceType = "DEFAULT", categories = listOf("Social", "Politics")),
+        VocabularyItem(italian = "Prevedibile", english = "Predictable", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Incoerente", english = "Inconsistent", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
+        VocabularyItem(italian = "Paradossale (situazione)", english = "Ironical", level = "C1", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Autentico", english = "Authentic", level = "C1", sourceType = "DEFAULT", categories = listOf("General", "Social")),
+        VocabularyItem(italian = "Efemero", english = "Ephemeral", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
+        VocabularyItem(italian = "Inappellabile", english = "Unappealable", level = "C2", sourceType = "DEFAULT", categories = listOf("Law", "Academic")),
+        VocabularyItem(italian = "Sincronizzare (dati)", english = "To sync", level = "C2", sourceType = "DEFAULT", categories = listOf("Technology")),
+        VocabularyItem(italian = "Incomparabile (unico)", english = "Matchless", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Infallibile", english = "Infallible", level = "C2", sourceType = "DEFAULT", categories = listOf("General")),
+        VocabularyItem(italian = "Spregevole", english = "Despicable", level = "C2", sourceType = "DEFAULT", categories = listOf("Social", "General")),
+        VocabularyItem(italian = "Metodicamente", english = "Methodically", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic", "Work")),
+        VocabularyItem(italian = "Perspicacia", english = "Perspicacity", level = "C2", sourceType = "DEFAULT", categories = listOf("Academic", "General")),
+        VocabularyItem(italian = "Imprescindibile", english = "Indispensable", level = "C2", sourceType = "DEFAULT", categories = listOf("General", "Academic")),
+        VocabularyItem(italian = "Anacronistico", english = "Anachronistic", level = "C2", sourceType = "DEFAULT", categories = listOf("History", "Academic"))
     )
 
+    /**
+     * Retrieves all unique categories from the database.
+     */
     suspend fun getAllCategories(): Result<List<String>> {
         return try {
             val snapshot = vocabularyCollection.get().await()
@@ -184,14 +204,17 @@ class VocabularyRepository(
                 .filter { it.isNotEmpty() }
                 .sorted()
             
-            Log.d(TAG, "Categorie trovate nel DB: $categories")
+            Log.d(TAG, "Categories found in DB: $categories")
             Result.success(categories)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore getAllCategories: ${e.message}")
+            Log.e(TAG, "Error getAllCategories: ${e.message}")
             Result.failure(e)
         }
     }
 
+    /**
+     * Fetches vocabulary items filtered by levels, source type, and categories.
+     */
     suspend fun getVocabularyFiltered(levels: List<String>, sourceType: String?, categories: List<String>?): Result<List<VocabularyItem>> {
         return try {
             var query = vocabularyCollection.whereIn("level", levels)
@@ -204,6 +227,7 @@ class VocabularyRepository(
                 doc.toObject(VocabularyItem::class.java)?.copy(id = doc.id)
             }
             
+            // Manual filter for categories (more flexible than Firestore array filter)
             if (!categories.isNullOrEmpty()) {
                 items = items.filter { item ->
                     item.categories.any { it in categories }
@@ -212,11 +236,14 @@ class VocabularyRepository(
             
             Result.success(items)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore getVocabularyFiltered: ${e.message}")
+            Log.e(TAG, "Error getVocabularyFiltered: ${e.message}")
             Result.failure(e)
         }
     }
 
+    /**
+     * Retrieves all vocabulary items along with user progress for a specific study direction.
+     */
     suspend fun getAllVocabularyWithProgress(userId: String, studyDirection: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
         return try {
             val allVocab = vocabularyCollection.get().await().documents.mapNotNull { doc ->
@@ -243,6 +270,9 @@ class VocabularyRepository(
         }
     }
 
+    /**
+     * Retrieves cards that are due for review based on SRS logic and filters.
+     */
     suspend fun getDueCards(
         userId: String, 
         levels: List<String>, 
@@ -253,6 +283,7 @@ class VocabularyRepository(
         return try {
             val allVocab = getVocabularyFiltered(levels, sourceType, categories).getOrThrow()
             
+            // If nothing found and looking for system cards, ensure database is seeded
             if (allVocab.isEmpty() && (sourceType == "DEFAULT" || sourceType == "ALL" || sourceType == null)) {
                 seedInitialData()
                 val retryVocab = getVocabularyFiltered(levels, sourceType, categories).getOrThrow()
@@ -283,11 +314,14 @@ class VocabularyRepository(
             
             Result.success(dueCards)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore in getDueCards: ${e.message}")
+            Log.e(TAG, "Error in getDueCards: ${e.message}")
             Result.failure(e)
         }
     }
 
+    /**
+     * Updates card progress in Firestore based on user's selected interval.
+     */
     suspend fun updateCardProgress(
         userId: String, 
         vocabularyId: String, 
@@ -329,6 +363,9 @@ class VocabularyRepository(
         }
     }
 
+    /**
+     * Resets all progress for a specific user.
+     */
     suspend fun resetUserProgress(userId: String): Result<Unit> {
         return try {
             val snapshot = progressCollection
@@ -346,6 +383,9 @@ class VocabularyRepository(
         }
     }
 
+    /**
+     * Resets progress for a single card.
+     */
     suspend fun resetSingleCardProgress(progressId: String): Result<Unit> {
         return try {
             progressCollection.document(progressId).delete().await()
@@ -355,23 +395,26 @@ class VocabularyRepository(
         }
     }
 
+    /**
+     * Seeds the initial vocabulary data into Firestore if missing or outdated.
+     */
     suspend fun seedInitialData() {
         try {
-            Log.d(TAG, "Avvio verifica e aggiornamento dati di sistema...")
+            Log.d(TAG, "Starting system data verification and update...")
             val snapshot = vocabularyCollection.whereEqualTo("sourceType", "DEFAULT").get().await()
             val existingDocs = snapshot.documents.associateBy { it.getString("italian") ?: "" }
 
             for (item in initialItems) {
                 val existingDoc = existingDocs[item.italian]
                 if (existingDoc == null) {
-                    Log.d(TAG, "Inserimento nuova parola: ${item.italian}")
+                    Log.d(TAG, "Inserting new word: ${item.italian}")
                     vocabularyCollection.add(item).await()
                 } else {
                     val currentCats = (existingDoc.get("categories") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                     val currentLevel = existingDoc.getString("level") ?: ""
                     
                     if (currentCats.sorted() != item.categories.sorted() || currentLevel != item.level) {
-                        Log.d(TAG, "Aggiornamento campi per: ${item.italian}")
+                        Log.d(TAG, "Updating fields for: ${item.italian}")
                         val updates = mapOf(
                             "categories" to item.categories,
                             "level" to item.level
@@ -380,9 +423,9 @@ class VocabularyRepository(
                     }
                 }
             }
-            Log.d(TAG, "Verifica completata.")
+            Log.d(TAG, "Verification completed.")
         } catch (e: Exception) {
-            Log.e(TAG, "Errore seeding: ${e.message}")
+            Log.e(TAG, "Error during seed: ${e.message}")
         }
     }
 }
