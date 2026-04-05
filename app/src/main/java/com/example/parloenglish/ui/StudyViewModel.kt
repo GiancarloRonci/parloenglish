@@ -22,7 +22,7 @@ class StudyViewModel(
     private val repository: VocabularyRepository,
     private val userId: String,
     private val sourceType: String? = null,
-    private val level: String = "A1",
+    private val levels: List<String> = listOf("A1"),
     private val categories: List<String>? = null,
     private val studyDirection: String = "IT_TO_EN"
 ) : ViewModel() {
@@ -43,12 +43,13 @@ class StudyViewModel(
     fun loadDueCards() {
         viewModelScope.launch {
             _uiState.value = StudyState.Loading
-            val result = repository.getDueCards(userId, level, sourceType, categories, studyDirection)
+            val result = repository.getDueCards(userId, levels, sourceType, categories, studyDirection)
             result.onSuccess { cards ->
                 if (cards.isEmpty()) {
                     _uiState.value = StudyState.Empty
                 } else {
-                    _uiState.value = StudyState.Success(cards)
+                    // Mescoliamo le carte in modo randomico
+                    _uiState.value = StudyState.Success(cards.shuffled())
                     _currentIndex.value = 0
                     _isRevealed.value = false
                 }
@@ -92,14 +93,14 @@ class StudyViewModelFactory(
     private val repository: VocabularyRepository,
     private val userId: String,
     private val sourceType: String? = null,
-    private val level: String = "A1",
+    private val levels: List<String> = listOf("A1"),
     private val categories: List<String>? = null,
     private val studyDirection: String = "IT_TO_EN"
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StudyViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StudyViewModel(repository, userId, sourceType, level, categories, studyDirection) as T
+            return StudyViewModel(repository, userId, sourceType, levels, categories, studyDirection) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

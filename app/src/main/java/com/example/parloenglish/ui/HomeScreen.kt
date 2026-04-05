@@ -31,7 +31,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
     onExitApp: () -> Unit,
-    onStudyClick: (String, String, List<String>, String) -> Unit,
+    onStudyClick: (String, List<String>, List<String>, String) -> Unit,
     onResetProgress: () -> Unit,
     onDebugClick: () -> Unit
 ) {
@@ -40,12 +40,21 @@ fun HomeScreen(
     val context = LocalContext.current
     
     var selectedSource by remember { mutableStateOf("ALL") }
-    var selectedLevel by remember { mutableStateOf("A1") }
     var studyDirection by remember { mutableStateOf("IT_TO_EN") }
-    val selectedCategories = remember { mutableStateListOf<String>() }
     
-    val allCategories by homeViewModel.categories.collectAsState()
     val levels = listOf("A1", "A2", "B1", "B2", "C1", "C2")
+    // Seleziona tutti i livelli di default
+    val selectedLevels = remember { mutableStateListOf<String>().apply { addAll(levels) } }
+    
+    val selectedCategories = remember { mutableStateListOf<String>() }
+    val allCategories by homeViewModel.categories.collectAsState()
+
+    // Seleziona tutte le categorie di default appena vengono caricate
+    LaunchedEffect(allCategories) {
+        if (allCategories.isNotEmpty() && selectedCategories.isEmpty()) {
+            selectedCategories.addAll(allCategories)
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -65,7 +74,7 @@ fun HomeScreen(
                     onClick = {
                         scope.launch {
                             drawerState.close()
-                            onStudyClick(selectedSource, selectedLevel, selectedCategories.toList(), studyDirection)
+                            onStudyClick(selectedSource, selectedLevels.toList(), selectedCategories.toList(), studyDirection)
                         }
                     },
                     icon = { Icon(Icons.Default.Style, contentDescription = null) },
@@ -232,17 +241,38 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Livello", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+                Text(text = "Livelli", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val allLevelsSelected = selectedLevels.size == levels.size
+                    FilterChip(
+                        selected = allLevelsSelected,
+                        onClick = {
+                            if (allLevelsSelected) {
+                                selectedLevels.clear()
+                                selectedLevels.add("A1")
+                            } else {
+                                selectedLevels.clear()
+                                selectedLevels.addAll(levels)
+                            }
+                        },
+                        label = { Text("Tutti") }
+                    )
+                    
                     levels.forEach { level ->
                         FilterChip(
-                            selected = selectedLevel == level,
-                            onClick = { selectedLevel = level },
+                            selected = selectedLevels.contains(level),
+                            onClick = {
+                                if (selectedLevels.contains(level)) {
+                                    if (selectedLevels.size > 1) selectedLevels.remove(level)
+                                } else {
+                                    selectedLevels.add(level)
+                                }
+                            },
                             label = { Text(level) }
                         )
                     }
@@ -257,6 +287,20 @@ fun HomeScreen(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        val allCatsSelected = selectedCategories.size == allCategories.size
+                        FilterChip(
+                            selected = allCatsSelected,
+                            onClick = {
+                                if (allCatsSelected) {
+                                    selectedCategories.clear()
+                                } else {
+                                    selectedCategories.clear()
+                                    selectedCategories.addAll(allCategories)
+                                }
+                            },
+                            label = { Text("Tutte") }
+                        )
+
                         allCategories.forEach { category ->
                             FilterChip(
                                 selected = selectedCategories.contains(category),
@@ -276,13 +320,42 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { onStudyClick(selectedSource, selectedLevel, selectedCategories.toList(), studyDirection) },
+                    onClick = { 
+                        onStudyClick(selectedSource, selectedLevels.toList(), selectedCategories.toList(), studyDirection) 
+                    },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    enabled = selectedLevels.isNotEmpty()
                 ) {
                     Text("Inizia Studio", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun LessonPlaceholderCard(title: String, duration: String, onClick: () -> Unit) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = title, fontWeight = FontWeight.Bold)
+                Text(text = duration, style = MaterialTheme.typography.bodySmall)
+            }
+            Text(
+                text = "Inizia",
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
