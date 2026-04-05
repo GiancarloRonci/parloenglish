@@ -37,11 +37,8 @@ class VocabularyRepository(
                 .distinct()
                 .filter { it.isNotEmpty() }
                 .sorted()
-            
-            Log.d(TAG, "Categorie trovate nel DB: $categories")
             Result.success(categories)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore getAllCategories: ${e.message}")
             Result.failure(e)
         }
     }
@@ -58,7 +55,6 @@ class VocabularyRepository(
                 doc.toObject(VocabularyItem::class.java)?.copy(id = doc.id)
             }
             
-            // Filtro manuale per categorie (più flessibile di quello Firestore per array)
             if (!categories.isNullOrEmpty()) {
                 items = items.filter { item ->
                     item.categories.any { it in categories }
@@ -67,12 +63,11 @@ class VocabularyRepository(
             
             Result.success(items)
         } catch (e: Exception) {
-            Log.e(TAG, "Errore getVocabularyFiltered: ${e.message}")
             Result.failure(e)
         }
     }
 
-    suspend fun getAllVocabularyWithProgress(userId: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
+    suspend fun getAllVocabularyWithProgress(userId: String, studyDirection: String): Result<List<Pair<VocabularyItem, UserProgress?>>> {
         return try {
             val allVocab = vocabularyCollection.get().await().documents.mapNotNull { doc ->
                 doc.toObject(VocabularyItem::class.java)?.copy(id = doc.id)
@@ -80,6 +75,7 @@ class VocabularyRepository(
             
             val progressSnapshot = progressCollection
                 .whereEqualTo("userId", userId)
+                .whereEqualTo("studyDirection", studyDirection)
                 .get()
                 .await()
             
@@ -101,21 +97,20 @@ class VocabularyRepository(
         userId: String, 
         level: String, 
         sourceType: String? = null,
-        categories: List<String>? = null
+        categories: List<String>? = null,
+        studyDirection: String = "IT_TO_EN"
     ): Result<List<Pair<VocabularyItem, UserProgress?>>> {
         return try {
             val allVocab = getVocabularyFiltered(level, sourceType, categories).getOrThrow()
             
             if (allVocab.isEmpty() && (sourceType == "DEFAULT" || sourceType == "ALL" || sourceType == null)) {
-                // Se non troviamo nulla, forziamo il seed e riproviamo una volta
                 seedInitialData()
-                val retryVocab = getVocabularyFiltered(level, sourceType, categories).getOrThrow()
-                if (retryVocab.isEmpty()) return Result.success(emptyList())
-                return getDueCards(userId, level, sourceType, categories)
+                return getDueCards(userId, level, sourceType, categories, studyDirection)
             }
 
             val progressSnapshot = progressCollection
                 .whereEqualTo("userId", userId)
+                .whereEqualTo("studyDirection", studyDirection)
                 .get()
                 .await()
             
@@ -141,7 +136,13 @@ class VocabularyRepository(
         }
     }
 
-    suspend fun updateCardProgress(userId: String, vocabularyId: String, currentProgress: UserProgress?, days: Int): Result<Unit> {
+    suspend fun updateCardProgress(
+        userId: String, 
+        vocabularyId: String, 
+        currentProgress: UserProgress?, 
+        days: Int,
+        studyDirection: String
+    ): Result<Unit> {
         return try {
             val now = Date()
             val calendar = Calendar.getInstance()
@@ -160,7 +161,8 @@ class VocabularyRepository(
                 userId = userId,
                 lastReview = Timestamp(now),
                 nextReview = Timestamp(nextReviewDate),
-                intervalDays = days
+                intervalDays = days,
+                studyDirection = studyDirection
             )
 
             if (currentProgress?.id != null && currentProgress.id.isNotEmpty()) {
@@ -203,25 +205,20 @@ class VocabularyRepository(
 
     suspend fun seedInitialData() {
         try {
-            Log.d(TAG, "Avvio verifica e aggiornamento dati di sistema...")
             val snapshot = vocabularyCollection.whereEqualTo("sourceType", "DEFAULT").get().await()
             val existingDocs = snapshot.documents.associateBy { it.getString("italian") ?: "" }
 
             for (item in initialItems) {
                 val existingDoc = existingDocs[item.italian]
                 if (existingDoc == null) {
-                    Log.d(TAG, "Inserimento nuova parola: ${item.italian}")
                     vocabularyCollection.add(item).await()
                 } else {
-                    // Aggiorniamo le categorie se mancano o sono diverse
                     val currentCats = (existingDoc.get("categories") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
                     if (currentCats.isEmpty() || currentCats != item.categories) {
-                        Log.d(TAG, "Aggiornamento categorie per: ${item.italian}")
                         existingDoc.reference.update("categories", item.categories).await()
                     }
                 }
             }
-            Log.d(TAG, "Verifica completata.")
         } catch (e: Exception) {
             Log.e(TAG, "Errore seeding: ${e.message}")
         }

@@ -21,6 +21,7 @@ fun StudyScreen(
     val uiState by viewModel.uiState.collectAsState()
     val currentIndex by viewModel.currentIndex.collectAsState()
     val isRevealed by viewModel.isRevealed.collectAsState()
+    val direction = viewModel.getStudyDirection()
 
     Scaffold(
         topBar = {
@@ -55,19 +56,23 @@ fun StudyScreen(
                     val currentPair = state.cards[currentIndex]
                     val vocab = currentPair.first
 
+                    // Determiniamo cosa mostrare sul fronte e sul retro
+                    val frontText = if (direction == "IT_TO_EN") vocab.italian else vocab.english
+                    val backText = if (direction == "IT_TO_EN") vocab.english else vocab.italian
+
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
+                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Carta ${currentIndex + 1} di ${state.cards.size}",
+                            text = "Carta ${currentIndex + 1} di ${state.cards.size} (${if (direction == "IT_TO_EN") "IT → EN" else "EN → IT"})",
                             style = MaterialTheme.typography.labelLarge
                         )
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
 
                         Card(
                             modifier = Modifier
@@ -81,7 +86,7 @@ fun StudyScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = vocab.italian,
+                                        text = frontText,
                                         fontSize = 28.sp,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center,
@@ -91,7 +96,7 @@ fun StudyScreen(
                                     if (isRevealed) {
                                         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
                                         Text(
-                                            text = vocab.english,
+                                            text = backText,
                                             fontSize = 28.sp,
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.Bold,
@@ -102,7 +107,7 @@ fun StudyScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(48.dp))
 
                         if (!isRevealed) {
                             Button(
@@ -118,7 +123,6 @@ fun StudyScreen(
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
                             
-                            // Opzioni di ripasso
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)

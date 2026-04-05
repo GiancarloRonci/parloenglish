@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
                     factory = AuthViewModelFactory(authRepository)
                 )
                 
-                // Nuovo ViewModel per gestire le categorie nella Home
                 val homeViewModel: HomeViewModel = viewModel(
                     factory = HomeViewModelFactory(vocabularyRepository)
                 )
@@ -97,9 +96,9 @@ class MainActivity : ComponentActivity() {
                                 finishAffinity()
                                 exitProcess(0)
                             },
-                            onStudyClick = { source, level, categories ->
+                            onStudyClick = { source, level, categories, direction ->
                                 val catsParam = if (categories.isEmpty()) "NONE" else categories.joinToString(",")
-                                navController.navigate("study/$source/$level/$catsParam")
+                                navController.navigate("study/$source/$level/$catsParam/$direction")
                             },
                             onResetProgress = {
                                 userSession?.let {
@@ -115,16 +114,18 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        route = "study/{sourceType}/{level}/{categories}",
+                        route = "study/{sourceType}/{level}/{categories}/{direction}",
                         arguments = listOf(
                             navArgument("sourceType") { type = NavType.StringType },
                             navArgument("level") { type = NavType.StringType },
-                            navArgument("categories") { type = NavType.StringType }
+                            navArgument("categories") { type = NavType.StringType },
+                            navArgument("direction") { type = NavType.StringType }
                         )
                     ) { backStackEntry ->
                         val sourceType = backStackEntry.arguments?.getString("sourceType")
                         val level = backStackEntry.arguments?.getString("level") ?: "A1"
                         val categoriesStr = backStackEntry.arguments?.getString("categories")
+                        val direction = backStackEntry.arguments?.getString("direction") ?: "IT_TO_EN"
                         
                         val categoriesList = if (categoriesStr == null || categoriesStr == "NONE") {
                             null
@@ -142,7 +143,8 @@ class MainActivity : ComponentActivity() {
                                     userSession.userId,
                                     if (sourceType == "ALL") null else sourceType,
                                     level,
-                                    categoriesList
+                                    categoriesList,
+                                    direction
                                 )
                             )
                             StudyScreen(

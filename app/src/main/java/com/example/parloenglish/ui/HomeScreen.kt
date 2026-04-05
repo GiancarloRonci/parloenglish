@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.ExitToApp
@@ -30,7 +31,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
     onExitApp: () -> Unit,
-    onStudyClick: (String, String, List<String>) -> Unit,
+    onStudyClick: (String, String, List<String>, String) -> Unit,
     onResetProgress: () -> Unit,
     onDebugClick: () -> Unit
 ) {
@@ -40,6 +41,7 @@ fun HomeScreen(
     
     var selectedSource by remember { mutableStateOf("ALL") }
     var selectedLevel by remember { mutableStateOf("A1") }
+    var studyDirection by remember { mutableStateOf("IT_TO_EN") }
     val selectedCategories = remember { mutableStateListOf<String>() }
     
     val allCategories by homeViewModel.categories.collectAsState()
@@ -63,7 +65,7 @@ fun HomeScreen(
                     onClick = {
                         scope.launch {
                             drawerState.close()
-                            onStudyClick(selectedSource, selectedLevel, selectedCategories.toList())
+                            onStudyClick(selectedSource, selectedLevel, selectedCategories.toList(), studyDirection)
                         }
                     },
                     icon = { Icon(Icons.Default.Style, contentDescription = null) },
@@ -141,7 +143,8 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(24.dp),
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
@@ -184,6 +187,25 @@ fun HomeScreen(
                     modifier = Modifier.align(Alignment.Start)
                 )
                 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(text = "Direzione", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = studyDirection == "IT_TO_EN",
+                        onClick = { studyDirection = "IT_TO_EN" },
+                        label = { Text("🇮🇹 IT → 🇬🇧 EN") }
+                    )
+                    FilterChip(
+                        selected = studyDirection == "EN_TO_IT",
+                        onClick = { studyDirection = "EN_TO_IT" },
+                        label = { Text("🇬🇧 EN → 🇮🇹 IT") }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(text = "Sorgente", style = MaterialTheme.typography.labelLarge, modifier = Modifier.align(Alignment.Start))
@@ -254,7 +276,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { onStudyClick(selectedSource, selectedLevel, selectedCategories.toList()) },
+                    onClick = { onStudyClick(selectedSource, selectedLevel, selectedCategories.toList(), studyDirection) },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
                 ) {

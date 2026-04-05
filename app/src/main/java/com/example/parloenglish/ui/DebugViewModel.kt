@@ -28,6 +28,9 @@ class DebugViewModel(
     private val _uiState = MutableStateFlow<DebugState>(DebugState.Loading)
     val uiState: StateFlow<DebugState> = _uiState.asStateFlow()
 
+    private val _currentDirection = MutableStateFlow("IT_TO_EN")
+    val currentDirection: StateFlow<String> = _currentDirection.asStateFlow()
+
     private val _toastMessage = MutableSharedFlow<String>()
     val toastMessage: SharedFlow<String> = _toastMessage.asSharedFlow()
 
@@ -35,10 +38,15 @@ class DebugViewModel(
         refreshData()
     }
 
+    fun setDirection(direction: String) {
+        _currentDirection.value = direction
+        refreshData()
+    }
+
     fun refreshData() {
         viewModelScope.launch {
             _uiState.value = DebugState.Loading
-            val result = repository.getAllVocabularyWithProgress(userId)
+            val result = repository.getAllVocabularyWithProgress(userId, _currentDirection.value)
             result.onSuccess { items ->
                 _uiState.value = DebugState.Success(items)
             }.onFailure { e ->
